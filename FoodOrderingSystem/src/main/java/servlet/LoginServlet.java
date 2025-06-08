@@ -33,7 +33,7 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("currentUser", user); // 将用户对象存入 session
 
             // 跳转到点餐页面
-            response.sendRedirect("menu.jsp");
+            response.sendRedirect("DishServlet");
         } else {
             // 登录失败，设置错误消息并转发回登录页面
             request.setAttribute("errorMessage", "账号或密码错误，请重试！");
