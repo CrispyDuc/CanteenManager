@@ -77,6 +77,7 @@ public class DishDao {
                 dish.setImageUrl(rs.getString("image_url"));
             }
         } catch (SQLException e) {
+                System.err.println("Error fetching dish by ID: " + e.getMessage()); // 打印具体错误信息
             e.printStackTrace();
         } finally {
             try {
@@ -88,5 +89,39 @@ public class DishDao {
             }
         }
         return dish;
+    }
+
+    /**
+     * 更新餐品信息
+     * @param dish 要更新的餐品对象 (ID 必须存在)
+     * @return 更新成功返回 true，否则返回 false
+     */
+    public boolean updateDish(Dish dish) {
+        String sql = "UPDATE dishes SET name = ?, price = ?, image_url = ? WHERE id = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        try {
+            conn = DBUtil.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, dish.getName());
+            pstmt.setBigDecimal(2, dish.getPrice());
+            pstmt.setString(3, dish.getImageUrl());
+            pstmt.setInt(4, dish.getId());
+
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.err.println("Error updating dish: " + e.getMessage()); // 打印具体错误信息
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (pstmt != null) pstmt.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

@@ -4,7 +4,7 @@
 <%@ page import="model.Dish" %>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.ArrayList" %>
-<%@ page import="java.math.BigDecimal" %> <%-- 导入 BigDecimal --%>
+<%@ page import="java.math.BigDecimal" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -22,6 +22,10 @@
             %>
                 <p>欢迎, <%= currentUser.getUsername() %>!</p>
                 <p><a href="logout.jsp">退出登录</a></p>
+                <%-- 添加更新餐品的链接，仅对admin可见 --%>
+                <% if (currentUser.getUsername().equals("admin")) { %>
+                    <p><a href="DishServlet?action=showUpdateForm" style="color: yellow; margin-left: 15px;">管理餐品</a></p>
+                <% } %>
             <%
                 } else {
             %>
@@ -42,6 +46,13 @@
             <p class="success-message"><%= addMessage %></p>
         <%
             }
+            // 显示DishServlet中传递的错误信息 (例如管理员权限不足)
+            String errorMessage = (String) request.getAttribute("errorMessage");
+            if (errorMessage != null && !errorMessage.isEmpty()) {
+        %>
+            <p class="error-message"><%= errorMessage %></p>
+        <%
+            }
         %>
 
         <div class="dish-list">
@@ -53,7 +64,7 @@
                 <div class="dish-item">
                     <img src="<%= dish.getImageUrl() %>" alt="<%= dish.getName() %>">
                     <h3><%= dish.getName() %></h3>
-                    <p>价格: ¥<%= String.format("%.2f", dish.getPrice()) %></p> <%-- 格式化价格 --%>
+                    <p>价格: ¥<%= String.format("%.2f", dish.getPrice()) %></p>
                     <form action="DishServlet" method="post">
                         <input type="hidden" name="action" value="addToCart">
                         <input type="hidden" name="dishId" value="<%= dish.getId() %>">
@@ -75,14 +86,14 @@
             <%
                 @SuppressWarnings("unchecked")
                 List<Dish> cart = (List<Dish>) session.getAttribute("cart");
-                BigDecimal cartTotal = BigDecimal.ZERO; // 初始化购物车总金额
+                BigDecimal cartTotal = BigDecimal.ZERO;
 
                 if (cart != null && !cart.isEmpty()) {
             %>
                 <ul>
                     <%
                         for (Dish cartItem : cart) {
-                            cartTotal = cartTotal.add(cartItem.getPrice()); // 累加总金额
+                            cartTotal = cartTotal.add(cartItem.getPrice());
                     %>
                         <li><%= cartItem.getName() %> - ¥<%= String.format("%.2f", cartItem.getPrice()) %></li>
                     <%
@@ -102,7 +113,7 @@
                     <button type="submit">清空购物车</button>
                 </form>
                 <%
-                    if (cart != null && !cart.isEmpty()) { // 只有购物车非空时才显示结算按钮
+                    if (cart != null && !cart.isEmpty()) {
                 %>
                 <form action="DishServlet" method="post" style="display: inline-block;">
                     <input type="hidden" name="action" value="checkout">
