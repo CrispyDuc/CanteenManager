@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美食抽奖系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .lottery-section {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: #FFD700;
+        }
+        
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 30px;
+        }
+        
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(
+                #FF6B6B 0deg 51.4deg,
+                #4ECDC4 51.4deg 102.8deg,
+                #FFD166 102.8deg 154.2deg,
+                #06D6A0 154.2deg 205.7deg,
+                #118AB2 205.7deg 257.1deg,
+                #073B4C 257.1deg 308.6deg,
+                #EF476F 308.6deg 360deg
+            );
+            position: relative;
+            transition: transform 3s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            background: #fff;
+            border-radius: 50%;
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #6a11cb;
+            cursor: pointer;
+        }
+        
+        .wheel-pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 40px;
+            z-index: 20;
+        }
+        
+        .pointer-triangle {
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-bottom: 30px solid #fff;
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 50px;
+            background: #FFD700;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            background: #ffcc00;
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .result-container {
+            margin-top: 30px;
+            text-align: center;
+            min-height: 100px;
+        }
+        
+        .result-title {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: #FFD700;
+        }
+        
+        .result-item {
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            animation: pop 0.5s ease;
+        }
+        
+        @keyframes pop {
+            0% { transform: scale(0.8); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .dish-stats {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
+        }
+        
+        .stat-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #FFD700;
+        }
+        
+        .stat-details {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .highlight {
+            background: rgba(255, 215, 0, 0.2);
+            border-radius: 5px;
+            padding: 2px 5px;
+        }
+        
+        .history {
+            margin-top: 30px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .history-title {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .history-items {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .history-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+        
+        .probability-info {
+            margin-top: 30px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 800px;
+        }
+        
+        .rules {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .rule-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .rule-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            color: #FFD700;
+        }
+        
+        .rule-content {
+            line-height: 1.6;
+        }
+        
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .wheel-container {
+                width: 250px;
+                height: 250px;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-utensils"></i> 美食幸运抽奖</h1>
+            <p class="subtitle">智能菜品抽奖系统 - 基于概率平衡算法，让每道菜都有公平的机会</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="lottery-section">
+                <h2 class="section-title"><i class="fas fa-gift"></i> 幸运大转盘</h2>
+                
+                <div class="wheel-container">
+                    <div class="wheel" id="wheel">
+                        <div class="wheel-center" id="spin-btn">
+                            <i class="fas fa-play"></i>
+                        </div>
+                    </div>
+                    <div class="wheel-pointer">
+                        <div class="pointer-triangle"></div>
+                    </div>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn" id="draw-btn">
+                        <i class="fas fa-random"></i> 开始抽奖
+                    </button>
+                    <button class="btn" id="reset-btn">
+                        <i class="fas fa-redo"></i> 重置状态
+                    </button>
+                </div>
+                
+                <div class="result-container">
+                    <div class="result-title">抽奖结果：</div>
+                    <div class="result-item" id="result">等待抽奖...</div>
+                </div>
+            </div>
+            
+            <div class="dish-stats">
+                <h2 class="section-title"><i class="fas fa-chart-bar"></i> 菜品状态监控</h2>
+                
+                <div class="stats-grid" id="stats-container">
+                    <!-- 动态生成菜品状态卡片 -->
+                </div>
+                
+                <div class="history">
+                    <h3 class="history-title"><i class="fas fa-history"></i> 最近抽奖记录</h3>
+                    <div class="history-items" id="history-container">
+                        <!-- 动态生成历史记录 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="probability-info">
+            <h2 class="section-title"><i class="fas fa-info-circle"></i> 抽奖规则说明</h2>
+            
+            <div class="rules">
+                <div class="rule-card">
+                    <div class="rule-title">
+                        <i class="fas fa-sync-alt"></i>
+                        <h3>连续中奖限制</h3>
+                    </div>
+                    <p class="rule-content">如果一道菜品<span class="highlight">连续两次被抽中</span>，第三次抽奖将自动排除该菜品，保证其他菜品机会。</p>
+                </div>
+                
+                <div class="rule-card">
+                    <div class="rule-title">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>概率平衡机制</h3>
+                    </div>
+                    <p class="rule-content">如果一道菜品<span class="highlight">连续七次未被抽中</span>，其被抽中概率将提升20%，增加中奖机会。</p>
+                </div>
+                
+                <div class="rule-card">
+                    <div class="rule-title">
+                        <i class="fas fa-balance-scale"></i>
+                        <h3>公平基础概率</h3>
+                    </div>
+                    <p class="rule-content">正常情况下，所有7种菜品拥有<span class="highlight">完全相等的被抽中概率</span>，确保系统公平性。</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 智能点餐系统 | 抽奖功能 v1.0 | 公平算法保障每道菜品机会均等</p>
+        </footer>
+    </div>
+
+    <script>
+        // 菜品数据模型
+        const dishes = [
+            { id: 1, name: "香煎牛排", color: "#FF6B6B", consecutiveWins: 0, consecutiveLosses: 0, baseProbability: 1 },
+            { id: 2, name: "海鲜意面", color: "#4ECDC4", consecutiveWins: 0, consecutiveLosses: 0, baseProbability: 1 },
+            { id: 3, name: "蘑菇披萨", color: "#FFD166", consecutiveWins: 0, consecutiveLosses: 0, baseProbability: 1 },
+            { id: 4, name: "蔬菜沙拉", color: "#06D6A0", consecutiveWins: 0, consecutiveLosses: 0, baseProbability: 1 },
+            { id: 5, name: "烤鸡套餐", color: "#118AB2", consecutiveWins: 0, consecutiveLosses: 0, baseProbability: 1 },
+            { id: 6, name: "寿司拼盘", color: "#073B4C", consecutiveWins: 0, consecutiveLosses: 0, baseProbability: 1 },
+            { id: 7, name: "巧克力蛋糕", color: "#EF476F", consecutiveWins: 0, consecutiveLosses: 0, baseProbability: 1 }
+        ];
+        
+        let drawHistory = [];
+        let isSpinning = false;
+        
+        // 初始化菜品状态显示
+        function renderDishStats() {
+            const container = document.getElementById('stats-container');
+            container.innerHTML = '';
+            
+            dishes.forEach(dish => {
+                const card = document.createElement('div');
+                card.className = 'stat-card';
+                
+                let status = '';
+                let probability = (dish.baseProbability * 100 / getTotalWeight()).toFixed(1) + '%';
+                
+                if (dish.consecutiveWins >= 2) {
+                    status = `<span class="highlight">排除中 (连续${dish.consecutiveWins}次中奖)</span>`;
+                    probability = '0%';
+                } else if (dish.consecutiveLosses >= 7) {
+                    status = `<span class="highlight">概率提升中 (连续${dish.consecutiveLosses}次未中)</span>`;
+                    probability = (dish.baseProbability * 1.2 * 100 / getTotalWeight()).toFixed(1) + '%';
+                } else {
+                    status = '正常状态';
+                }
+                
+                card.innerHTML = `
+                    <div class="stat-header">
+                        <div style="width:12px;height:12px;background:${dish.color};border-radius:50%;"></div>
+                        <div class="stat-name">${dish.name}</div>
+                    </div>
+                    <div class="stat-value">${probability}</div>
+                    <div class="stat-details">
+                        状态: ${status}<br>
+                        连中: ${dish.consecutiveWins}次 | 连失: ${dish.consecutiveLosses}次
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        // 更新抽奖历史
+        function updateHistory() {
+            const container = document.getElementById('history-container');
+            container.innerHTML = '';
+            
+            // 只显示最近10条记录
+            const recentHistory = drawHistory.slice(-10);
+            
+            recentHistory.forEach((item, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.textContent = `${item.dish.name}`;
+                container.appendChild(historyItem);
+            });
+            
+            if (recentHistory.length === 0) {
+                container.innerHTML = '<div class="history-item">暂无抽奖记录</div>';
+            }
+        }
+        
+        // 计算总权重
+        function getTotalWeight() {
+            let total = 0;
+            
+            dishes.forEach(dish => {
+                // 连续两次中奖的菜品排除
+                if (dish.consecutiveWins >= 2) return;
+                
+                // 连续七次未中的菜品权重提高20%
+                if (dish.consecutiveLosses >= 7) {
+                    total += dish.baseProbability * 1.2;
+                } else {
+                    total += dish.baseProbability;
+                }
+            });
+            
+            return total;
+        }
+        
+        // 执行抽奖
+        function drawDish() {
+            if (isSpinning) return;
+            
+            isSpinning = true;
+            const spinBtn = document.getElementById('spin-btn');
+            spinBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            // 获取总权重
+            const totalWeight = getTotalWeight();
+            let random = Math.random() * totalWeight;
+            let selectedDish = null;
+            
+            // 根据权重选择菜品
+            for (const dish of dishes) {
+                // 跳过连续两次中奖的菜品
+                if (dish.consecutiveWins >= 2) continue;
+                
+                // 计算当前菜品权重
+                let weight = dish.baseProbability;
+                if (dish.consecutiveLosses >= 7) {
+                    weight *= 1.2; // 提升20%概率
+                }
+                
+                // 检查是否选中当前菜品
+                if (random < weight) {
+                    selectedDish = dish;
+                    break;
+                }
+                
+                random -= weight;
+            }
+            
+            // 旋转动画
+            const wheel = document.getElementById('wheel');
+            const rotations = 5 + Math.random() * 2; // 5-7圈
+            const dishIndex = dishes.findIndex(d => d.id === selectedDish.id);
+            const anglePerDish = 360 / dishes.length;
+            const targetAngle = 360 * rotations + (dishIndex * anglePerDish + anglePerDish/2);
+            
+            wheel.style.transform = `rotate(${-targetAngle}deg)`;
+            
+            // 更新菜品状态
+            setTimeout(() => {
+                // 重置所有菜品的连续未中计数
+                dishes.forEach(dish => {
+                    if (dish.id !== selectedDish.id) {
+                        dish.consecutiveLosses++;
+                        dish.consecutiveWins = 0;
+                    }
+                });
+                
+                // 更新选中菜品状态
+                selectedDish.consecutiveWins++;
+                selectedDish.consecutiveLosses = 0;
+                
+                // 显示结果
+                document.getElementById('result').textContent = selectedDish.name;
+                document.getElementById('result').style.color = selectedDish.color;
+                
+                // 添加到历史记录
+                drawHistory.push({
+                    dish: selectedDish,
+                    timestamp: new Date()
+                });
+                
+                // 更新显示
+                renderDishStats();
+                updateHistory();
+                
+                isSpinning = false;
+                spinBtn.innerHTML = '<i class="fas fa-play"></i>';
+            }, 3000);
+        }
+        
+        // 重置所有状态
+        function resetAll() {
+            dishes.forEach(dish => {
+                dish.consecutiveWins = 0;
+                dish.consecutiveLosses = 0;
+            });
+            
+            drawHistory = [];
+            
+            document.getElementById('result').textContent = '等待抽奖...';
+            document.getElementById('result').style.color = '#fff';
+            
+            const wheel = document.getElementById('wheel');
+            wheel.style.transform = 'rotate(0deg)';
+            
+            renderDishStats();
+            updateHistory();
+        }
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDishStats();
+            updateHistory();
+            
+            document.getElementById('draw-btn').addEventListener('click', drawDish);
+            document.getElementById('spin-btn').addEventListener('click', drawDish);
+            document.getElementById('reset-btn').addEventListener('click', resetAll);
+        });
+    </script>
+</body>
+</html>
